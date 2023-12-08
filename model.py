@@ -167,15 +167,15 @@ class CSPN(nn.Module):
         abs_sum = torch.sum(torch.abs(affinity), dim=1, keepdim=True)
         sum = torch.sum(affinity, dim=1, keepdim=True)
         affinity = affinity / abs_sum
-        new_affinity = torch.cat((affinity, 1-sum), dim=1)
-        
+        new_affinity = torch.cat((affinity[:,0:4,:,:], 1-sum,affinity[:,5:,:,:]), dim=1)
+         
         assert new_affinity.shape[1] == 9
         new_affinity = new_affinity.view(new_affinity.size(0),9,-1) #Now sum of new_affinity is 1!
         
         unfold = nn.Unfold(kernel_size=3, stride=1,padding=1)
         fold = nn.Fold(output_size=(256,256),kernel_size=3, stride=1,padding=1)
         current_segmentation_unfold = unfold(current_segmentation) #b, 9, h*w
-        coarse_segmentation_unfold = unfold(coarse_segmentation)[:,5,:].unsqueeze(1) #b, 1, h*w
+        coarse_segmentation_unfold = unfold(coarse_segmentation)[:,4,:].unsqueeze(1) #b, 1, h*w
         unfolded_seg = torch.cat((current_segmentation_unfold[:,0:4,:], coarse_segmentation_unfold), dim=1) 
         unfolded_seg = torch.cat((unfolded_seg, current_segmentation_unfold[:,5:,:]), dim=1) #b, 9, h*w
         
